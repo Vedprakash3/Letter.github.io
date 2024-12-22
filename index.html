@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Letter Writing</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to bottom right, #ff9a9e, #fad0c4);
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.3);
+      width: 90%;
+      max-width: 600px;
+    }
+    .input-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 10px 0;
+    }
+    .input-row label {
+      flex: 0 0 20%;
+      text-align: right;
+      font-weight: bold;
+    }
+    .input-row input {
+      flex: 1;
+      margin-left: 10px;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    .subject-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 20px 0;
+    }
+    .subject-row label {
+      font-weight: bold;
+      margin-right: 10px;
+      color: #ff5733;
+    }
+    textarea {
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+    button {
+      margin: 10px 0;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      background-color: #6c5ce7;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #a29bfe;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Letter Writing (Formal/Informal)</h1>
+
+    <!-- Sender's Address -->
+    <div class="input-row">
+      <label for="senderAddress">Your Address:</label>
+      <input type="text" id="senderAddress" placeholder="Your Address">
+    </div>
+
+    <!-- Date -->
+    <div class="input-row">
+      <label for="date">Date:</label>
+      <input type="text" id="date" placeholder="Date (e.g., 22nd Dec 2024)">
+    </div>
+
+    <!-- Recipient Address -->
+    <div class="input-row">
+      <label for="receiverAddress">Recipient:</label>
+      <input type="text" id="receiverAddress" placeholder="Recipient's Address">
+    </div>
+
+    <!-- Subject -->
+    <div class="subject-row">
+      <label for="subject">Subject:</label>
+      <input type="text" id="subject" placeholder="Subject" style="width: 60%;">
+    </div>
+
+    <!-- Letter Body -->
+    <textarea id="letterBody" placeholder="Write your letter body here..." rows="6"></textarea>
+
+    <!-- Sender's Name -->
+    <div class="input-row">
+      <label for="senderName">Your Name:</label>
+      <input type="text" id="senderName" placeholder="Your Name">
+    </div>
+
+    <!-- Letter Type Slider -->
+    <div>
+      <label for="letterType">Letter Type:</label>
+      <input type="range" id="letterType" min="0" max="1" value="0">
+      <p id="letterTypeLabel">Formal</p>
+    </div>
+
+    <button id="downloadButton">Download PDF</button>
+  </div>
+
+  <script>
+    const { jsPDF } = window.jspdf;
+
+    // Update slider label and hide subject for informal letters
+    document.getElementById('letterType').addEventListener('input', function () {
+      const value = this.value;
+      document.getElementById('letterTypeLabel').innerText = value === '0' ? 'Formal' : 'Informal';
+
+      // Hide subject for informal letters
+      const subjectRow = document.querySelector('.subject-row');
+      if (value === '1') {
+        subjectRow.style.display = 'none'; // Hide subject
+      } else {
+        subjectRow.style.display = 'flex'; // Show subject
+      }
+    });
+
+    document.getElementById('downloadButton').addEventListener('click', function () {
+      const senderAddress = document.getElementById('senderAddress').value.trim();
+      const receiverAddress = document.getElementById('receiverAddress').value.trim();
+      const date = document.getElementById('date').value.trim();
+      const subject = document.getElementById('subject').value.trim();
+      const body = document.getElementById('letterBody').value.trim();
+      const senderName = document.getElementById('senderName').value.trim();
+      const isFormal = document.getElementById('letterType').value === '0';
+
+      if (!senderAddress || !receiverAddress || !date || !body || !senderName) {
+        alert('Please fill in all fields!');
+        return;
+      }
+
+      const doc = new jsPDF();
+
+      // Your Address and Date (right aligned)
+      doc.setFont("times", "italic");
+      doc.setFontSize(12);
+      doc.setTextColor(255, 0, 0);
+      doc.text('Your Address:', 200, 20, { align: 'right' });
+      doc.setTextColor(0);
+      doc.text(senderAddress, 200, 27, { align: 'right' });
+
+      doc.setTextColor(255, 0, 0);
+      doc.text('Date:', 200, 40, { align: 'right' });
+      doc.setTextColor(0);
+      doc.text(date, 200, 47, { align: 'right' });
+
+      // Recipient's Address
+      doc.setTextColor(255, 0, 0);
+      doc.text("Recipient's Address:", 10, 60);
+      doc.setTextColor(0);
+      doc.text(receiverAddress, 10, 67);
+
+      // Subject (if formal)
+      if (isFormal && subject) {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        doc.setTextColor(255, 0, 0);
+        doc.text('Subject:', 105, 87, { align: 'center' });
+        doc.setTextColor(0);
+        doc.text(subject, 115, 87, { align: 'left' });
+      }
+
+      // Salutation and Letter Body
+      const salutation = isFormal ? 'Dear Sir/Madam,' : 'Hey there,';
+      doc.text(salutation, 10, 110);
+      const splitBody = doc.splitTextToSize(body, 180);
+      doc.text(splitBody, 20, 120);
+
+      // Closing and Name
+      const closing = isFormal ? 'Yours sincerely,' : 'Best regards,';
+      doc.text(closing, 200, 250, { align: 'right' });
+      doc.text(senderName, 200, 260, { align: 'right' });
+
+      doc.save('letter.pdf');
+    });
+  </script>
+</body>
+</html>
