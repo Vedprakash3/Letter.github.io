@@ -128,18 +128,14 @@
   <script>
     const { jsPDF } = window.jspdf;
 
-    // Update slider label and hide subject for informal letters
+    // Handle letter type change
     document.getElementById('letterType').addEventListener('input', function () {
       const value = this.value;
       document.getElementById('letterTypeLabel').innerText = value === '0' ? 'Formal' : 'Informal';
 
       // Hide subject for informal letters
       const subjectRow = document.querySelector('.subject-row');
-      if (value === '1') {
-        subjectRow.style.display = 'none'; // Hide subject
-      } else {
-        subjectRow.style.display = 'flex'; // Show subject
-      }
+      subjectRow.style.display = value === '1' ? 'none' : 'flex';
     });
 
     document.getElementById('downloadButton').addEventListener('click', function () {
@@ -157,46 +153,68 @@
       }
 
       const doc = new jsPDF();
+      const pageHeight = doc.internal.pageSize.height;
 
-      // Your Address and Date (right aligned)
-      doc.setFont("times", "italic");
+      let y = 20;
+
+      // Your Address and Date in red
       doc.setFontSize(12);
       doc.setTextColor(255, 0, 0);
-      doc.text('Your Address:', 200, 20, { align: 'right' });
+      doc.text('Your Address:', 200, y, { align: 'right' });
+      y += 7;
       doc.setTextColor(0);
-      doc.text(senderAddress, 200, 27, { align: 'right' });
+      doc.text(senderAddress, 200, y, { align: 'right' });
 
+      y += 10;
       doc.setTextColor(255, 0, 0);
-      doc.text('Date:', 200, 40, { align: 'right' });
+      doc.text('Date:', 200, y, { align: 'right' });
+      y += 7;
       doc.setTextColor(0);
-      doc.text(date, 200, 47, { align: 'right' });
+      doc.text(date, 200, y, { align: 'right' });
 
-      // Recipient's Address
+      y += 15;
       doc.setTextColor(255, 0, 0);
-      doc.text("Recipient's Address:", 10, 60);
+      doc.text("Recipient's Address:", 10, y);
+      y += 7;
       doc.setTextColor(0);
-      doc.text(receiverAddress, 10, 67);
+      doc.text(receiverAddress, 10, y);
 
-      // Subject (if formal)
+      y += 15;
       if (isFormal && subject) {
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(14);
         doc.setTextColor(255, 0, 0);
-        doc.text('Subject:', 105, 87, { align: 'center' });
+        doc.text('Subject:', 105, y, { align: 'center' });
         doc.setTextColor(0);
-        doc.text(subject, 115, 87, { align: 'left' });
+        doc.text(subject, 115, y, { align: 'left' });
+        y += 10;
       }
 
-      // Salutation and Letter Body
+      // Salutation - No extra space after the comma
       const salutation = isFormal ? 'Dear Sir/Madam,' : 'Hey there,';
-      doc.text(salutation, 10, 110);
-      const splitBody = doc.splitTextToSize(body, 180);
-      doc.text(splitBody, 20, 120);
+      doc.text(salutation, 10, y);
 
-      // Closing and Name
+      // Start body text directly after the salutation with an added space below
+      y += 7;  // Added extra space after salutation
+
+      // Body starts after the salutation
+      const bodyText = body.split('\n'); // Split body into lines
+      bodyText.forEach((line, index) => {
+        if (y > pageHeight - 40) {
+          doc.addPage();
+          y = 20;
+        }
+        doc.text(line, 10, y); // Indented body text
+        y += 10;
+      });
+
+      // Closing (directly below the body text)
       const closing = isFormal ? 'Yours sincerely,' : 'Best regards,';
-      doc.text(closing, 200, 250, { align: 'right' });
-      doc.text(senderName, 200, 260, { align: 'right' });
+      if (y > pageHeight - 30) {
+        doc.addPage();
+        y = 20;
+      }
+      doc.text(closing, 200, y + 10, { align: 'right' });
+      doc.text(senderName, 200, y + 20, { align: 'right' });
 
       doc.save('letter.pdf');
     });
