@@ -193,18 +193,30 @@
       const salutation = isFormal ? 'Dear Sir/Madam,' : 'Hey there,';
       doc.text(salutation, 10, y);
 
-      // Start body text directly after the salutation with an added space below
-      y += 7;  // Added extra space after salutation
+      // Set y directly below the comma to start the letter body immediately
+      y += 5; // Reduced space, adjust as needed
 
-      // Body starts after the salutation
+      // Start body text directly after the salutation
       const bodyText = body.split('\n'); // Split body into lines
+      const marginLeft = 10;
+      const marginRight = 200; // Define right margin (adjust as needed)
+      const maxWidth = marginRight - marginLeft - 10; // Adjust for padding
+
       bodyText.forEach((line, index) => {
+        // Check if line exceeds the maximum width and wrap text
+        const wrappedText = doc.splitTextToSize(line, maxWidth);
+
+        // If it's too close to the bottom, add a new page
         if (y > pageHeight - 40) {
           doc.addPage();
           y = 20;
         }
-        doc.text(line, 10, y); // Indented body text
-        y += 10;
+
+        // Print the wrapped text
+        wrappedText.forEach((wrappedLine) => {
+          doc.text(wrappedLine, marginLeft, y); // Indented body text
+          y += 10; // Move to the next line
+        });
       });
 
       // Closing (directly below the body text)
